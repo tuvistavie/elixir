@@ -1692,18 +1692,15 @@ defmodule Kernel do
   @spec get_in(Access.t, nonempty_list(term)) :: term
   def get_in(data, keys)
 
-  def get_in(data, [h]) when is_function(h),
-    do: h.(:get, data, &(&1))
-  def get_in(data, [h|t]) when is_function(h),
-    do: h.(:get, data, &get_in(&1, t))
+  def get_in(data, [h]),
+    do: Access.get(data, h)
 
-  def get_in(nil, [_]),
-    do: nil
   def get_in(nil, [_|t]),
     do: get_in(nil, t)
 
-  def get_in(data, [h]),
-    do: Access.get(data, h)
+  def get_in(data, [h|t]) when is_function(h),
+    do: h.(:get, data, &get_in(&1, t))
+
   def get_in(data, [h|t]),
     do: get_in(Access.get(data, h), t)
 

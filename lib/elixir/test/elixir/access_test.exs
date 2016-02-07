@@ -28,6 +28,13 @@ defmodule AccessTest do
     end
   end
 
+  test "for functions" do
+    map = %{"fruits" => ["banana", "apple", "orange"]}
+    assert map["fruits"][by_index(0)]  == "banana"
+    assert map["fruits"][by_index(3)]  == nil
+    assert map["unknown"][by_index(3)] == :oops
+  end
+
   test "for keywords" do
     assert [foo: :bar][:foo] == :bar
     assert [foo: [bar: :baz]][:foo][:bar] == :baz
@@ -73,6 +80,18 @@ defmodule AccessTest do
     assert_raise UndefinedFunctionError,
                  "undefined function AccessTest.Sample.get_and_update/3 (AccessTest.Sample does not implement the Access behaviour)", fn ->
       Access.get_and_update(struct(Sample, []), :name, fn nil -> {:ok, :baz} end)
+    end
+  end
+
+  def by_index(index) do
+    fn
+      _, nil, next ->
+        next.(:oops)
+      :get, data, next ->
+        next.(Enum.at(data, index))
+      :get_and_update, data, next ->
+        {get, update} = next.(Enum.at(data, index))
+        {get, List.replace_at(data, index, update)}
     end
   end
 end

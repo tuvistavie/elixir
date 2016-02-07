@@ -130,6 +130,10 @@ defmodule Access do
   @spec fetch(t, term) :: {:ok, term} | :error
   def fetch(container, key)
 
+  def fetch(container, f) when is_function(f) do
+    {:ok, f.(:get, container, &(&1))}
+  end
+
   def fetch(%{__struct__: struct} = container, key) do
     struct.fetch(container, key)
   rescue
